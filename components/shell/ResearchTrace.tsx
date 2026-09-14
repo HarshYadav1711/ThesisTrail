@@ -1,31 +1,23 @@
-const PROVENANCE_CATEGORIES = [
-  {
-    id: "user_stated",
-    label: "USER STATED",
-    description: "Values explicitly asserted by the user.",
-    placeholder: "No user-stated values yet.",
-  },
-  {
-    id: "proposed_assumption",
-    label: "ASSUMED",
-    description: "System-proposed assumptions awaiting confirmation.",
-    placeholder: "Locked defaults will appear here as proposals in later phases.",
-  },
-  {
-    id: "confirmed_assumption",
-    label: "CONFIRMED",
-    description: "Assumptions the user has accepted.",
-    placeholder: "Nothing confirmed yet.",
-  },
-  {
-    id: "derived",
-    label: "DERIVED",
-    description: "Values mechanically computed from data or the spec.",
-    placeholder: "No derived metrics until an experiment runs.",
-  },
-] as const;
+import type { TraceSection } from "@/lib/research/trace-model";
 
-export function ResearchTrace() {
+type ResearchTraceProps = {
+  sections: TraceSection[];
+};
+
+function provenanceClass(provenance: string): string {
+  if (
+    provenance === "proposed_assumption" ||
+    provenance === "needs_clarification"
+  ) {
+    return "text-tt-warning";
+  }
+  if (provenance === "user_stated") {
+    return "text-tt-accent";
+  }
+  return "text-tt-text-secondary";
+}
+
+export function ResearchTrace({ sections }: ResearchTraceProps) {
   return (
     <aside
       aria-label="Research Trace"
@@ -38,24 +30,44 @@ export function ResearchTrace() {
         </p>
       </div>
       <div className="space-y-3 p-3">
-        {PROVENANCE_CATEGORIES.map((category) => (
+        {sections.map((section) => (
           <section
-            key={category.id}
-            aria-labelledby={`trace-${category.id}`}
+            key={section.id}
+            aria-labelledby={`trace-${section.id}`}
             className="rounded-sm border border-tt-border bg-tt-surface-raised p-2"
           >
             <h3
-              id={`trace-${category.id}`}
+              id={`trace-${section.id}`}
               className="text-[10px] font-semibold uppercase tracking-wide text-tt-warning"
             >
-              {category.label}
+              {section.label}
             </h3>
             <p className="mt-1 text-xs text-tt-text-secondary">
-              {category.description}
+              {section.description}
             </p>
-            <p className="mt-2 font-mono text-xs tabular-nums text-tt-text">
-              {category.placeholder}
-            </p>
+            {section.items.length === 0 ? (
+              <p className="mt-2 font-mono text-xs tabular-nums text-tt-text-secondary">
+                {section.emptyMessage ?? "None yet."}
+              </p>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {section.items.map((item) => (
+                  <li key={item.id} className="border-t border-tt-border pt-2">
+                    <div className="text-xs font-medium text-tt-text">
+                      {item.label}
+                    </div>
+                    <div className="mt-1 font-mono text-xs tabular-nums text-tt-text">
+                      {item.value}
+                    </div>
+                    <div
+                      className={`mt-1 text-[10px] uppercase tracking-wide ${provenanceClass(item.provenance)}`}
+                    >
+                      {item.provenance}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
         ))}
       </div>

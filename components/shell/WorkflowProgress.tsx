@@ -1,12 +1,24 @@
+import {
+  deriveStageStatuses,
+  type StageProgressStatus,
+} from "@/lib/research/research-session";
 import { WORKFLOW_STAGES, type WorkflowStage } from "@/lib/workflow/stages";
 
 type WorkflowProgressProps = {
-  activeStage?: WorkflowStage;
+  activeStage?: Extract<WorkflowStage, "ASK" | "CLARIFY" | "DEFINE">;
 };
+
+function statusLabel(status: StageProgressStatus): string {
+  if (status === "current") return "Current";
+  if (status === "completed") return "Completed";
+  return "Pending";
+}
 
 export function WorkflowProgress({
   activeStage = "ASK",
 }: WorkflowProgressProps) {
+  const statuses = deriveStageStatuses(activeStage);
+
   return (
     <nav
       aria-label="Research workflow progress"
@@ -14,7 +26,8 @@ export function WorkflowProgress({
     >
       <ol className="flex flex-wrap items-center gap-1 sm:gap-0">
         {WORKFLOW_STAGES.map((stage, index) => {
-          const isActive = stage === activeStage;
+          const status = statuses[stage];
+          const isCurrent = status === "current";
           return (
             <li key={stage} className="flex items-center">
               {index > 0 ? (
@@ -28,13 +41,22 @@ export function WorkflowProgress({
               <span
                 className={[
                   "rounded-sm px-2 py-1 text-xs font-medium tracking-wide sm:text-sm",
-                  isActive
+                  isCurrent
                     ? "bg-tt-surface-raised text-tt-accent ring-1 ring-tt-accent"
-                    : "text-tt-text-secondary",
+                    : status === "completed"
+                      ? "text-tt-text"
+                      : "text-tt-text-secondary",
                 ].join(" ")}
-                aria-current={isActive ? "step" : undefined}
+                aria-current={isCurrent ? "step" : undefined}
               >
                 {stage}
+                <span className="sr-only"> ({statusLabel(status)})</span>
+                <span
+                  aria-hidden="true"
+                  className="ml-1 text-[10px] font-normal uppercase tracking-wide opacity-80"
+                >
+                  {statusLabel(status)}
+                </span>
               </span>
             </li>
           );
