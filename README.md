@@ -34,6 +34,6 @@ See `data/nifty50/PROVENANCE.md` for license verification, checksums, intended v
 
 ## Phase status
 
-Phase 2 ASK→CLARIFY workflow is in place. Phase 3A adds Zod contracts (`MarketBar`, locked `ExperimentSpec`) and the verified bundled dataset adapter. The deterministic backtest engine and `/api/research/run` are not implemented yet.
+Phase 2 ASK→CLARIFY workflow is in place. Phase 3A adds Zod contracts (`MarketBar`, locked `ExperimentSpec`) and the verified bundled dataset adapter. Phase 3B adds the pure deterministic event-study engine and `ExperimentResult` contract (no `/api/research/run` and no UI execution yet).
 
 See `phases.md` for subsequent gates.
