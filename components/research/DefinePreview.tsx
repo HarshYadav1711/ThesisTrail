@@ -1,10 +1,11 @@
 import {
   BASELINE_OVERLAP_POLICY,
+  CLARIFICATION_DEFINITIONS,
   EVENT_OVERLAP_POLICY,
   LOCKED_HYPOTHESIS,
+  TEST_PERIOD_ISO,
   TEST_PERIOD_LABEL,
   TRADABILITY_NOTE,
-  CLARIFICATION_DEFINITIONS,
   type ClarificationId,
 } from "@/lib/research/clarification-options";
 import {
@@ -81,6 +82,9 @@ export function DefinePreview({
           <dt className="text-xs text-tt-text-secondary">Fixed test period</dt>
           <dd className="mt-1 font-mono text-xs tabular-nums text-tt-text">
             {TEST_PERIOD_LABEL}
+          </dd>
+          <dd className="mt-1 font-mono text-[11px] tabular-nums text-tt-text-secondary">
+            {TEST_PERIOD_ISO.start} through {TEST_PERIOD_ISO.end}
           </dd>
         </div>
         <div>

@@ -1,0 +1,40 @@
+{
+  "title": "NIFTY 50 Historical Data (1999–2026)",
+  "ownerName": "APARNA MP",
+  "ownerRef": "aparnamadathil",
+  "ref": "aparnamadathil/nifty-50-1999-2026-full-27-years-data",
+  "id": 9631588,
+  "licenseName": "CC0: Public Domain",
+  "currentVersionNumber": 1,
+  "lastUpdated": "2026-03-04T16:52:48.337Z",
+  "totalBytes": 425792,
+  "subtitle": "Longest publicly available NIFTY 50 dataset merged from NSE records and yfinance",
+  "sourceFilename": "nifty50_25years_ohlcv_1999_2026.csv",
+  "canonicalUrl": "https://www.kaggle.com/datasets/aparnamadathil/nifty-50-1999-2026-full-27-years-data",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "versions": [
+    {
+      "versionNumber": 1,
+      "creationDate": "2026-03-04T16:52:48.337Z",
+      "versionNotes": "Initial release",
+      "status": "Ready",
+      "creatorName": "APARNA MP"
+    }
+  ],
+  "evidenceNotes": {
+    "capturedFrom": [
+      "Kaggle dataset page license field",
+      "GET /api/v1/datasets/view/aparnamadathil/nifty-50-1999-2026-full-27-years-data",
+      "Croissant metadata license.name / license.url"
+    ],
+    "licenseWording": "Kaggle uploader-declared CC0 1.0",
+    "excludes": [
+      "credentials",
+      "cookies",
+      "authorization headers",
+      "signed temporary download URLs",
+      "machine-specific paths",
+      "volatile account fields"
+    ]
+  }
+}

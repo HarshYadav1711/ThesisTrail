@@ -150,7 +150,7 @@ Implement validated `ExperimentSpec`, bundled dataset adapter, and deterministic
 ### Permitted work
 
 - Zod schemas for spec/result including reproducibility metadata (checksums, counts, exclusions by reason, calculation contract version; no result-core timestamps).
-- Download/verify Kaggle CC0 source; process OHLC-only interval 2007-01-01–2025-12-31; discard Volume; write concise `PROVENANCE.md` with all Phase 3 verification fields from `docs/EXPERIMENT_CONTRACT.md`.
+- Download/verify Kaggle source (uploader-declared CC0 1.0); process OHLC with intended filter 2007-01-01–2025-12-31 and lock the effective experiment period to verified coverage 2007-09-17–2025-12-31; discard Volume; write concise PROVENANCE.md with all Phase 3 verification fields from docs/EXPERIMENT_CONTRACT.md.
 - Dataset adapter and validation (`YYYY-MM-DD` strings; duplicate rejection; OHLC bounds; no JS Date timezone ordering).
 - Research engine: signal `<= -0.02`; `entryIndex = signalIndex + 1`; `exitIndex = entryIndex + 4`; overlap with recorded exclusions; costs once as `bps/10_000`; overlapping baseline windows; primary median-net delta; aggregation rules.
 - `POST /api/research/run` with error taxonomy.
@@ -406,7 +406,7 @@ Use before closing any phase:
 11. Primary outcome = event median net − baseline median net with locked phrases only.  
 12. Baseline windows may overlap; same horizon/cost formulas as events.  
 13. Decimal internals vs percent UI; round-trip cost once; no calculation rounding.  
-14. Kaggle CC0 plan; no NSE-site CSV; no Volume; no synthetic-as-NIFTY.  
+14. Kaggle uploader-declared CC0 plan; no NSE-site CSV; no Volume; no synthetic-as-NIFTY; effective period matches verified coverage.
 15. Vercel Hobby personal/non-commercial; local tests do not require deploy.  
 16. No unauthorized code/deps outside the phase’s permitted work.  
 17. No timestamps inside deterministic result core.

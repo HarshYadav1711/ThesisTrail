@@ -8,7 +8,7 @@ This document is the binding research contract for the locked initial experiment
 “Does buying NIFTY after a sharp fall work?”
 
 **Formalized research question:**  
-Over the bundled NIFTY 50 daily OHLC snapshot (processed interval 2007-01-01 through 2025-12-31 inclusive, subject to row validation), when a session’s close-to-close return is less than or equal to −0.02, does entering long at the next available trading session’s open and exiting at the close of the fifth trading session (counting the entry session as session 1) produce a higher median net forward return than the unconditional distribution of five-session NIFTY holding returns on the same dataset, after the same modeled round-trip cost?
+Over the bundled NIFTY 50 daily OHLC snapshot (effective experiment period 2007-09-17 through 2025-12-31 inclusive), when a session’s close-to-close return is less than or equal to −0.02, does entering long at the next available trading session’s open and exiting at the close of the fifth trading session (counting the entry session as session 1) produce a higher median net forward return than the unconditional distribution of five-session NIFTY holding returns on the same dataset, after the same modeled round-trip cost?
 
 ## 2. Falsifiable hypothesis
 
@@ -44,7 +44,7 @@ Interpretation rules are in §24. Mean return, positive-return rate, best event,
 | Overlap policy | Ignore new signals while an event trade is active | Avoids double-counting overlapping exposures in event studies |
 | Execution cost | 10 bps round-trip, editable | Illustrative friction only; **does not** represent verified ETF, futures, or broker cost |
 | Comparison | Unconditional five-session open→close returns on same dataset; primary metric is median net vs median net | Anchors “works” vs ordinary holding periods |
-| Dataset | Kaggle “NIFTY 50 Historical Data (1999–2026)” by APARNA MP; processed 2007-01-01–2025-12-31; Volume discarded | CC0; avoids documented early missing months; period chosen before inspecting results |
+| Dataset | Kaggle “NIFTY 50 Historical Data (1999–2026)” by APARNA MP; effective experiment period 2007-09-17–2025-12-31; Volume discarded | Kaggle uploader-declared CC0 1.0; earliest verified observation inside the preselected 2007–2025 inclusion window; corrected during dataset validation before results existed |
 | Optimization | None | Historical maximize-fitting is explicitly forbidden |
 
 **Tradability note (mandatory in UI):** The index itself is not directly tradable. Real execution depends on choosing an ETF, futures contract, or another tradable proxy.
@@ -352,22 +352,33 @@ Record exclusions with machine-readable reasons:
 “NIFTY 50 Historical Data (1999–2026)” by APARNA MP on Kaggle.  
 Public page: https://www.kaggle.com/datasets/aparnamadathil/nifty-50-1999-2026-full-27-years-data
 
-Dataset page declares:
+Dataset page declares (uploader-declared; not an NSE license grant to this repository):
 
-- CC0: Public Domain;
-- 1999–2006 sourced from NSE historical records;
-- 2007–2026 sourced through yfinance;
+- Kaggle uploader-declared **CC0: Public Domain** (CC0 1.0);
+- 1999–2006 described by the uploader as NSE historical records;
+- 2007–2026 described by the uploader as Yahoo Finance via yfinance;
 - unreliable volume in part of the dataset;
 - missing months in the early period.
 
-**Locked processed interval:** 2007-01-01 through 2025-12-31 inclusive, subject to actual row validation.
+### Experiment period (authoritative)
+
+| Concept | Dates | Meaning |
+|---|---|---|
+| Original intended filtering window | `2007-01-01` through `2025-12-31` inclusive | Preselected inclusion window used when filtering the third-party source CSV |
+| Verified available observation window | `2007-09-17` through `2025-12-31` inclusive | Actual sessions present in the source inside that inclusion window |
+| **Effective experiment period** | **`2007-09-17` through `2025-12-31` inclusive** | Locked period carried by `ExperimentSpec`, UI, and Trace |
+
+**Source gap:** the raw source advances from `2006-12-29` directly to `2007-09-17` (no observations in between). ThesisTrail does not fabricate, interpolate, or forward-fill January–September 2007 sessions.
+
+**Decision:** use the earliest verified observation within the preselected window (`2007-09-17`) without filling missing sessions. **Timing:** this correction was made during Phase 3A dataset validation and **before** any backtest result existed. It is a data-availability correction, not result-based parameter selection.
+
+`ExperimentSpec.dataset.value.processedInterval` must use the **effective** dates (`2007-09-17` … `2025-12-31`), not the original requested filter start `2007-01-01`.
 
 **Rationale:**
 
-- 2007 onward avoids the dataset’s documented missing early-period months;
-- 2025-12-31 produces complete calendar-year coverage;
-- the period is selected **before** inspecting strategy results;
-- it spans several market regimes;
+- The original 2007–2025 inclusion window avoided the dataset’s documented missing early-period months and was chosen before inspecting strategy results;
+- Verification showed no source rows before `2007-09-17` inside that window;
+- `2025-12-31` remains the inclusive end of the available processed coverage;
 - Volume is discarded because it is unnecessary and documented as unreliable.
 
 **Do not** commit a CSV copied directly from the NSE Indices website. Its terms state that site material may not be copied, reproduced, uploaded, posted, or distributed without permission.

@@ -211,7 +211,7 @@ describe("reconsider, edit question, and reset", () => {
     expect(state.assumptionsConfirmed).toBe(false);
   });
 
-  it("reset restores the exact initial state", () => {
+  it("reset restores the exact initial state including effective period", () => {
     let state = advanceFromAsk(createInitialSession());
     state = selectOption(state, "instrument", "nifty_etf");
     state = setRoundTripBpsInput(state, "25");
@@ -221,6 +221,12 @@ describe("reconsider, edit question, and reset", () => {
     expect(state.question).toBe(DEFAULT_EXAMPLE_QUESTION);
     expect(state.roundTripBps).toBe(10);
     expect(state.stage).toBe("ASK");
+    const period = buildTraceModel(advanceFromAsk(state))
+      .flatMap((section) => section.items)
+      .find((item) => item.id === "test_period");
+    expect(period?.value).toContain("17 Sep 2007 – 31 Dec 2025");
+    expect(period?.value).toContain("2007-09-17");
+    expect(period?.value).not.toContain("2007-01-01");
   });
 });
 

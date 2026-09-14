@@ -4,6 +4,11 @@
  * No ExperimentSpec, metrics, or execution logic.
  */
 
+import {
+  NIFTY50_EFFECTIVE_EXPERIMENT_PERIOD,
+  NIFTY50_EFFECTIVE_PERIOD_DISPLAY,
+} from "@/lib/data/nifty50-constants";
+
 export const DEFAULT_EXAMPLE_QUESTION =
   "Does buying NIFTY after a sharp fall work?";
 
@@ -38,7 +43,10 @@ export type ClarificationDefinition = {
   defaultOptionId: string;
 };
 
-export const TEST_PERIOD_LABEL = "2007-01-01 through 2025-12-31";
+export const TEST_PERIOD_LABEL = NIFTY50_EFFECTIVE_PERIOD_DISPLAY;
+
+/** Canonical ISO bounds for the effective experiment period (machine values). */
+export const TEST_PERIOD_ISO = NIFTY50_EFFECTIVE_EXPERIMENT_PERIOD;
 
 export const CLARIFICATION_DEFINITIONS: readonly ClarificationDefinition[] = [
   {
@@ -155,14 +163,14 @@ export const CLARIFICATION_DEFINITIONS: readonly ClarificationDefinition[] = [
     ambiguousPhrase: "work",
     prompt: "What does “works” mean for evaluation?",
     rationale:
-      "The primary outcome is pre-registered as the median event net return minus the median unconditional baseline net return. Positive is historically directionally consistent with the hypothesis under these assumptions; zero or negative means the observed sample does not support the hypothesis; no qualifying events or invalid data means insufficient evidence. This is descriptive evidence comparison, not causal or statistical proof.",
+      `The primary outcome is pre-registered as the median event net return minus the median unconditional baseline net return over the effective experiment period ${NIFTY50_EFFECTIVE_PERIOD_DISPLAY} (${NIFTY50_EFFECTIVE_EXPERIMENT_PERIOD.start} through ${NIFTY50_EFFECTIVE_EXPERIMENT_PERIOD.end}). Positive is historically directionally consistent with the hypothesis under these assumptions; zero or negative means the observed sample does not support the hypothesis; no qualifying events or invalid data means insufficient evidence. This is descriptive evidence comparison, not causal or statistical proof.`,
     defaultOptionId: "median_net_vs_baseline",
     options: [
       {
         id: "median_net_vs_baseline",
         label: "Median event net − median baseline net (primary)",
         summary:
-          "Pre-registered primary comparison. Secondary descriptive metrics may appear later; they do not replace this primary outcome.",
+          `Pre-registered primary comparison on ${NIFTY50_EFFECTIVE_PERIOD_DISPLAY}. Secondary descriptive metrics may appear later; they do not replace this primary outcome.`,
         isRecommended: true,
         isSupported: true,
       },

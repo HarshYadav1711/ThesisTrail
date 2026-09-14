@@ -2,6 +2,7 @@ import {
   CLARIFICATION_DEFINITIONS,
   EVENT_OVERLAP_POLICY,
   ROUND_TRIP_COST_RATIONALE,
+  TEST_PERIOD_ISO,
   TEST_PERIOD_LABEL,
   TRADABILITY_NOTE,
   getOption,
@@ -124,7 +125,7 @@ export function buildTraceModel(state: ResearchSessionState): TraceSection[] {
     items.push({
       id: "test_period",
       label: "Test period",
-      value: TEST_PERIOD_LABEL,
+      value: `${TEST_PERIOD_LABEL} (${TEST_PERIOD_ISO.start} through ${TEST_PERIOD_ISO.end})`,
       provenance: state.assumptionsConfirmed
         ? "confirmed_assumption"
         : "proposed_assumption",

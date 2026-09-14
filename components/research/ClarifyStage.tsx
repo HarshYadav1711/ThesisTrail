@@ -4,6 +4,7 @@ import {
   CLARIFICATION_DEFINITIONS,
   EVENT_OVERLAP_POLICY,
   ROUND_TRIP_COST_RATIONALE,
+  TEST_PERIOD_ISO,
   TEST_PERIOD_LABEL,
   type ClarificationId,
 } from "@/lib/research/clarification-options";
@@ -68,7 +69,10 @@ export function ClarifyStage({
           Evaluation settings details
         </legend>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-tt-text-secondary">
-          <li>Test period: {TEST_PERIOD_LABEL}</li>
+          <li>
+            Test period: {TEST_PERIOD_LABEL} ({TEST_PERIOD_ISO.start} through{" "}
+            {TEST_PERIOD_ISO.end})
+          </li>
           <li>{ROUND_TRIP_COST_RATIONALE}</li>
           <li>{BASELINE_OVERLAP_POLICY}</li>
           <li>{EVENT_OVERLAP_POLICY}</li>

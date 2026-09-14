@@ -196,12 +196,12 @@ The only concrete provider in this assessment is a bundled file provider (proces
 
 ## 9. Bundled dataset strategy
 
-Preferred source: Kaggle “NIFTY 50 Historical Data (1999–2026)” by APARNA MP (CC0: Public Domain).  
+Preferred source: Kaggle “NIFTY 50 Historical Data (1999–2026)” by APARNA MP (Kaggle uploader-declared CC0 1.0).
 URL: https://www.kaggle.com/datasets/aparnamadathil/nifty-50-1999-2026-full-27-years-data
 
-- Process and ship OHLC only for 2007-01-01 through 2025-12-31 inclusive (subject to row validation).
+- Filter the source with intended inclusion window 2007-01-01 through 2025-12-31 inclusive; ship OHLC for the **effective** verified coverage 2007-09-17 through 2025-12-31 (earliest available session inside that window; do not fabricate the source gap after 2006-12-29).
 - Discard Volume (unnecessary; documented unreliable).
-- Document provenance in Phase 3 (`data/nifty50/PROVENANCE.md` or equivalent): first/last sessions, row counts, duplicates, invalid/missing counts, source URL/filename, license, download/access date, SHA-256 of downloaded source and processed CSV, transformation steps.
+- Document provenance in Phase 3 (`data/nifty50/PROVENANCE.md` or equivalent): intended vs effective periods, first/last sessions, row counts, duplicates, invalid/missing counts, source URL/filename, uploader-declared license, download/access date, SHA-256 of downloaded source and processed CSV, transformation steps.
 - Do **not** commit a CSV copied from the NSE Indices website (redistribution restricted by that site’s terms).
 - If Kaggle license/file cannot be verified in Phase 3: stop and report; do not silently switch sources; do not fabricate NIFTY data; synthetic fixture only after human approval and never labeled as historical NIFTY evidence.
 - Validate on load per `EXPERIMENT_CONTRACT.md` (trim, explicit column map, finite positive OHLC, unique sorted dates, high/low bounds, reject duplicates).
