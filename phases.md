@@ -56,7 +56,7 @@ Scaffold the Next.js App Router TypeScript app with Tailwind, strict typing, bas
 ### Permitted work
 
 - Initialize Next.js + TypeScript strict + Tailwind.
-- Add Zod and Vitest tooling as dependencies when needed for foundation.
+- Add Vitest for foundation gates (contrast/token checks). Zod is reserved for Phase 3 and must not be installed in Phase 1.
 - Global styles / CSS variables for the locked token set in `docs/DESIGN.md`: `#1C1C28`, `#1EC1CB`, `#4ADE80`, `#FB7185`, `#FBBF24`, `#F4F4F5`, `#A1A1AA`, `#242433`, `#2A2A3B`, `#3A3A4A`.
 - Geist Sans (and Geist Mono or tabular figures) via the framework’s supported self-hosted font mechanism; no decorative display font; no extra font package unless technically necessary.
 - Minimal app shell: header placeholder, stage indicator placeholder, main area, Trace rail/drawer chrome without full logic.

@@ -1,0 +1,16 @@
+---
+description: ThesisTrail project context for all agent sessions
+alwaysApply: true
+---
+
+# ThesisTrail context
+
+Before material changes:
+
+1. Read `rules.md` (binding development policy).
+2. Read the relevant project documents under `docs/` plus `phases.md`.
+3. Treat `docs/EXPERIMENT_CONTRACT.md` as authoritative for research semantics.
+4. Stay inside the active phase gate in `phases.md`; do not start later-phase work early.
+5. If instructions conflict, stop and report the conflict instead of inventing a resolution.
+
+Do not duplicate the full contents of `rules.md` here.

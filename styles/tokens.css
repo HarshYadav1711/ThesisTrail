@@ -1,0 +1,31 @@
+:root {
+  /* Locked ThesisTrail semantic tokens — docs/DESIGN.md */
+  --tt-bg: #1c1c28;
+  --tt-accent: #1ec1cb;
+  --tt-positive: #4ade80;
+  --tt-negative: #fb7185;
+  --tt-warning: #fbbf24;
+  --tt-text: #f4f4f5;
+  --tt-text-secondary: #a1a1aa;
+  --tt-surface: #242433;
+  --tt-surface-raised: #2a2a3b;
+  --tt-border: #3a3a4a;
+
+  --tt-radius: 0.375rem;
+  --tt-focus-ring: 0 0 0 2px var(--tt-bg), 0 0 0 4px var(--tt-accent);
+}
+
+@theme inline {
+  --color-tt-bg: var(--tt-bg);
+  --color-tt-accent: var(--tt-accent);
+  --color-tt-positive: var(--tt-positive);
+  --color-tt-negative: var(--tt-negative);
+  --color-tt-warning: var(--tt-warning);
+  --color-tt-text: var(--tt-text);
+  --color-tt-text-secondary: var(--tt-text-secondary);
+  --color-tt-surface: var(--tt-surface);
+  --color-tt-surface-raised: var(--tt-surface-raised);
+  --color-tt-border: var(--tt-border);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}

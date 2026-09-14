@@ -124,6 +124,8 @@ No shared mutable server session store is required for Phase 0–7 of this proto
 
 ## 7. Proposed directory structure
 
+Phase 1 locked the application at the repository root (`app/`), not under `src/`, to match the `create-next-app` App Router default and the `@/*` alias root.
+
 ```
 ThesisTrail/
   docs/
@@ -133,43 +135,39 @@ ThesisTrail/
     EXPERIMENT_CONTRACT.md
   rules.md
   phases.md
-  README.md                    # Phase 7
-  public/
+  README.md
+  public/                      # optional static assets
   data/
-    nifty50/                   # processed OHLC CSV + PROVENANCE.md
-  src/
-    app/
-      layout.tsx
-      page.tsx
-      globals.css
-      api/
-        research/
-          run/route.ts
-          interpret/route.ts   # Phase 5 only
-    components/
-      workflow/
-      trace/
-      results/
-      ui/                      # small primitives only as needed
-    lib/
-      schemas/                 # Zod + types
+    nifty50/                   # Phase 3: processed OHLC CSV + PROVENANCE.md
+  app/
+    layout.tsx
+    page.tsx
+    globals.css
+    api/
       research/
-        engine.ts
-        metrics.ts
-        baseline.ts
-        costs.ts
-        provenance.ts
-      data/
-        adapter.ts
-        types.ts
-      interpret/               # Phase 5 fallback + optional provider
-    styles/
-      tokens.css
+        run/route.ts           # Phase 3+
+        interpret/route.ts     # Phase 5 only
+  components/
+    shell/                     # Phase 1 workspace chrome
+    workflow/                  # later phases
+    trace/
+    results/
+    ui/                        # small primitives only as needed
+  lib/
+    a11y/
+    workflow/
+    schemas/                   # Zod + types (later)
+    research/                  # Phase 3+
+    data/                      # Phase 3+
+    interpret/                 # Phase 5
+  styles/
+    tokens.css
   tests/
-    research/
+    foundation.test.ts         # Phase 1
+    research/                  # Phase 3+
 ```
 
-Exact filenames may adjust during Phase 1, but responsibilities must remain recognizable.
+Exact filenames may adjust in later phases, but responsibilities must remain recognizable.
 
 ## 8. Data-provider abstraction
 
