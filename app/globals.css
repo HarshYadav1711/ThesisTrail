@@ -23,6 +23,18 @@
     border-width: 0;
   }
 
+  .focus\:not-sr-only:focus,
+  .focus\:not-sr-only:focus-visible {
+    position: absolute;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 0.75rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
   :focus-visible {
     outline: none;
     box-shadow: var(--tt-focus-ring);

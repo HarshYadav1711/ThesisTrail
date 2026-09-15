@@ -1,5 +1,5 @@
+import { lazy, Suspense } from "react";
 import { EventEvidenceTable } from "@/components/research/EventEvidenceTable";
-import { EventOutcomesChart } from "@/components/research/EventOutcomesChart";
 import {
   NIFTY50_DATASET_ID,
   NIFTY50_EFFECTIVE_PERIOD_DISPLAY,
@@ -25,6 +25,24 @@ import {
   learnStatusLabel,
 } from "@/lib/research/learn-copy";
 import type { ExperimentResult } from "@/lib/schemas/experiment-result";
+
+/** Lazy-load Recharts only after a successful run reaches LEARN. */
+const EventOutcomesChart = lazy(async () => {
+  const mod = await import("@/components/research/EventOutcomesChart");
+  return { default: mod.EventOutcomesChart };
+});
+
+function ChartPlaceholder() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mt-4 flex h-[260px] min-h-[220px] items-center justify-center rounded-sm border border-tt-border bg-tt-surface-raised text-sm text-tt-text-secondary"
+    >
+      Loading event-outcome chart…
+    </div>
+  );
+}
 
 type LearnStageProps = {
   question: string;
@@ -212,11 +230,21 @@ export function LearnStage({
           </ul>
         </div>
 
-        <EventOutcomesChart
-          events={result.events}
-          baselineMedianNet={baselineMedian}
-        />
-        <EventEvidenceTable events={result.events} />
+        {result.events.length > 0 ? (
+          <Suspense fallback={<ChartPlaceholder />}>
+            <EventOutcomesChart
+              events={result.events}
+              baselineMedianNet={baselineMedian}
+            />
+          </Suspense>
+        ) : (
+          <p className="mt-4 text-sm text-tt-text-secondary">
+            No executed events are available to chart for this sample.
+          </p>
+        )}
+        {result.events.length > 0 ? (
+          <EventEvidenceTable events={result.events} />
+        ) : null}
       </section>
 
       <section
@@ -305,7 +333,16 @@ export function LearnStage({
           </div>
           <div>
             <dt className="text-tt-text-secondary">Source</dt>
-            <dd className="break-all">{NIFTY50_SOURCE_URL}</dd>
+            <dd className="break-all">
+              <a
+                href={NIFTY50_SOURCE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-tt-accent underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tt-accent"
+              >
+                {NIFTY50_SOURCE_URL}
+              </a>
+            </dd>
           </div>
           <div>
             <dt className="text-tt-text-secondary">Runtime fetch</dt>

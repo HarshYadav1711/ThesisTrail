@@ -1,3 +1,5 @@
+import { QUESTION_MAX_LENGTH } from "@/lib/schemas/interpretation";
+
 type AskStageProps = {
   question: string;
   error: string | null;
@@ -13,6 +15,9 @@ export function AskStage({
   onContinue,
   onResetSession,
 }: AskStageProps) {
+  const helpId = error ? "ask-error" : "ask-help";
+  const remaining = QUESTION_MAX_LENGTH - question.length;
+
   return (
     <section
       aria-labelledby="ask-heading"
@@ -20,6 +25,7 @@ export function AskStage({
     >
       <h2
         id="ask-heading"
+        tabIndex={-1}
         className="text-sm font-semibold text-tt-text sm:text-base"
       >
         ASK
@@ -39,21 +45,32 @@ export function AskStage({
         id="research-question"
         name="research-question"
         rows={3}
+        maxLength={QUESTION_MAX_LENGTH}
         value={question}
         onChange={(event) => onQuestionChange(event.target.value)}
-        className="mt-1 w-full rounded-sm border border-tt-border bg-tt-surface-raised px-3 py-2 text-sm text-tt-text placeholder:text-tt-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tt-accent"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={helpId}
+        className="mt-1 w-full break-words rounded-sm border border-tt-border bg-tt-surface-raised px-3 py-2 text-sm text-tt-text placeholder:text-tt-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tt-accent"
         placeholder="Does buying NIFTY after a sharp fall work?"
       />
-      <div aria-live="polite" className="mt-2 text-xs">
-        {error ? (
-          <p role="alert" className="text-tt-negative">
-            {error}
-          </p>
-        ) : (
-          <p className="text-tt-text-secondary">
-            Default example: “Does buying NIFTY after a sharp fall work?”
-          </p>
-        )}
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-2 text-xs">
+        <div id={helpId} aria-live="polite">
+          {error ? (
+            <p role="alert" className="text-tt-negative">
+              {error}
+            </p>
+          ) : (
+            <p className="text-tt-text-secondary">
+              Default example: “Does buying NIFTY after a sharp fall work?”
+            </p>
+          )}
+        </div>
+        <p className="font-mono tabular-nums text-tt-text-secondary" aria-hidden="true">
+          {remaining} characters left
+        </p>
+        <span className="sr-only">
+          Maximum {QUESTION_MAX_LENGTH} characters.
+        </span>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">

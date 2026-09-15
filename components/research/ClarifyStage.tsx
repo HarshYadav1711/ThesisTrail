@@ -42,12 +42,13 @@ export function ClarifyStage({
   return (
     <section aria-labelledby="clarify-heading" className="space-y-3">
       <div className="rounded-sm border border-tt-border bg-tt-surface p-4">
-        <h2
-          id="clarify-heading"
-          className="text-sm font-semibold text-tt-text sm:text-base"
-        >
-          CLARIFY
-        </h2>
+      <h2
+        id="clarify-heading"
+        tabIndex={-1}
+        className="text-sm font-semibold text-tt-text sm:text-base"
+      >
+        CLARIFY
+      </h2>
         <p className="mt-2 max-w-prose text-sm text-tt-text-secondary">
           Four clarification groups map the question’s ambiguities to explicit
           assumptions. Choose a supported option in each group, then confirm
@@ -102,9 +103,15 @@ export function ClarifyStage({
           inputMode="decimal"
           value={costInput}
           onChange={(event) => onCostInputChange(event.target.value)}
+          aria-invalid={state.costError ? true : undefined}
+          aria-describedby="round-trip-bps-help"
           className="mt-1 min-h-11 w-full max-w-xs rounded-sm border border-tt-border bg-tt-bg px-3 py-2 font-mono text-sm tabular-nums text-tt-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tt-accent"
         />
-        <div aria-live="polite" className="mt-2 text-xs">
+        <div
+          id="round-trip-bps-help"
+          aria-live="polite"
+          className="mt-2 text-xs"
+        >
           {state.costError ? (
             <p role="alert" className="text-tt-negative">
               {state.costError}
@@ -112,7 +119,8 @@ export function ClarifyStage({
           ) : (
             <p className="text-tt-text-secondary">
               A valid edited cost remains a proposed assumption until overall
-              confirmation.
+              confirmation. The value is illustrative friction in basis points,
+              not a verified instrument cost.
             </p>
           )}
         </div>

@@ -41,6 +41,7 @@ export function DefinePreview({
       </p>
       <h2
         id="define-heading"
+        tabIndex={-1}
         className="mt-1 text-sm font-semibold text-tt-text sm:text-base"
       >
         Confirmed experiment ready to test

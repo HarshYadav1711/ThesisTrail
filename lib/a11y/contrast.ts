@@ -148,15 +148,63 @@ export function shellContrastPairs(tokens: DesignTokens): ContrastPair[] {
       minimum: 4.5,
     },
     {
+      name: "secondary text on raised surface",
+      foreground: tokens.textSecondary,
+      background: tokens.surfaceRaised,
+      minimum: 4.5,
+    },
+    {
       name: "accent on background (interactive chrome)",
       foreground: tokens.accent,
       background: tokens.background,
       minimum: 3.0,
     },
     {
+      name: "accent on surface",
+      foreground: tokens.accent,
+      background: tokens.surface,
+      minimum: 3.0,
+    },
+    {
+      name: "primary button text on accent",
+      foreground: tokens.background,
+      background: tokens.accent,
+      minimum: 4.5,
+    },
+    {
       name: "warning on background (assumption badge text)",
       foreground: tokens.warning,
       background: tokens.background,
+      minimum: 3.0,
+    },
+    {
+      name: "warning on surface",
+      foreground: tokens.warning,
+      background: tokens.surface,
+      minimum: 3.0,
+    },
+    {
+      name: "positive outcome on background",
+      foreground: tokens.positive,
+      background: tokens.background,
+      minimum: 3.0,
+    },
+    {
+      name: "negative outcome on background",
+      foreground: tokens.negative,
+      background: tokens.background,
+      minimum: 3.0,
+    },
+    {
+      name: "positive outcome on surface",
+      foreground: tokens.positive,
+      background: tokens.surface,
+      minimum: 3.0,
+    },
+    {
+      name: "negative outcome on surface",
+      foreground: tokens.negative,
+      background: tokens.surface,
       minimum: 3.0,
     },
   ];

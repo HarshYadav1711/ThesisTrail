@@ -32,26 +32,30 @@ Research OHLC is a **fixed repository snapshot** under `data/nifty50/`, derived 
 
 See `data/nifty50/PROVENANCE.md` for license verification, checksums, intended vs effective periods, and transformation steps. Run `npm run data:verify` after clone.
 
-## Phase status
+## Optional question interpretation
 
-Phase 5 complete: ASK → CLARIFY → DEFINE → TEST → LEARN, plus optional
-provider-neutral question interpretation via `POST /api/research/interpret`.
-
-- Historical tests still run only through deterministic `POST /api/research/run`
-- AI may restate the question and phrase the four ambiguity categories
-- AI cannot change defaults, execute tests, or write LEARN conclusions
-- With LLM env vars absent (the default), interpretation uses a deterministic
-  **rules-based fallback** labeled as such — never as AI
-- Public assessment deployment should remain fallback-only unless private
-  provider quota is intentionally configured and monitored
-
-Optional server-only variables (see `.env.example`):
+`POST /api/research/interpret` may rephrase ambiguities. With no LLM variables set
+(the default), it returns a deterministic **rules-based fallback** labeled as
+such. Optional server-only variables (see `.env.example`):
 
 - `THESISTRAIL_LLM_ENDPOINT`
 - `THESISTRAIL_LLM_MODEL`
 - `THESISTRAIL_LLM_API_KEY`
 
 Do not use `NEXT_PUBLIC_*` for these. Only the normalized research question may
-be sent to a configured provider.
+be sent to a configured provider. Public assessment deployments should remain
+fallback-only unless private provider quota is intentionally monitored.
 
-See `phases.md` for Phase 6+.
+## Phase status
+
+Phase 6 complete: accessibility, responsive, reduced-motion, and
+product-integrity hardening on the working ASK → LEARN product.
+
+- Skip link, stable main landmark, and stage focus handoffs
+- Form field associations and keyboard-reachable overflow regions
+- Expanded contrast verification for outcome and chrome pairings
+- Event-outcome chart lazy-loaded so Recharts stays out of the ASK bundle
+- Optional AI interpretation remains question-phrasing only; execution stays
+  deterministic
+
+See `phases.md` for Phase 7 assessment deliverables (not started).

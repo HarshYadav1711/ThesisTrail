@@ -58,7 +58,12 @@ export function EventEvidenceTable({ events }: EventEvidenceTableProps) {
       <h3 className="text-xs font-semibold uppercase tracking-wide text-tt-text">
         Event evidence table
       </h3>
-      <div className="mt-2 max-w-full overflow-x-auto rounded-sm border border-tt-border">
+      <div
+        className="mt-2 max-w-full overflow-x-auto rounded-sm border border-tt-border"
+        role="region"
+        aria-label="Event evidence table. Scroll horizontally when columns overflow."
+        tabIndex={0}
+      >
         <table className="min-w-full border-collapse text-left text-tt-text">
           <caption className="border-b border-tt-border bg-tt-surface-raised px-2 py-1.5 text-left text-xs text-tt-text-secondary">
             Chronological executed events (first {Math.min(INITIAL_ROWS, events.length)} shown
@@ -100,7 +105,12 @@ export function EventEvidenceTable({ events }: EventEvidenceTableProps) {
           <summary className="cursor-pointer text-sm text-tt-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tt-accent">
             View all {events.length} events
           </summary>
-          <div className="mt-2 max-w-full overflow-x-auto">
+          <div
+            className="mt-2 max-w-full overflow-x-auto"
+            role="region"
+            aria-label="All executed events table. Scroll horizontally when columns overflow."
+            tabIndex={0}
+          >
             <table className="min-w-full border-collapse text-left text-tt-text">
               <caption className="sr-only">
                 All {events.length} executed events in chronological order

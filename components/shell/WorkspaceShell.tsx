@@ -22,10 +22,22 @@ export function WorkspaceShell({
 }: WorkspaceShellProps) {
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-tt-bg text-tt-text">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-sm focus:bg-tt-accent focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-tt-bg focus:shadow-[var(--tt-focus-ring)]"
+      >
+        Skip to main content
+      </a>
       <AppHeader />
       <WorkflowProgress activeStage={activeStage} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col lg:flex-row">
-        <main className="min-w-0 flex-1 p-3 sm:p-4">{children}</main>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="min-w-0 flex-1 p-3 sm:p-4 focus-visible:outline-none"
+        >
+          {children}
+        </main>
         <ResearchTrace sections={traceSections} />
       </div>
     </div>

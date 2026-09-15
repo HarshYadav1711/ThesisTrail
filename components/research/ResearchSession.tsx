@@ -39,7 +39,16 @@ import {
   parseResearchRunResponse,
 } from "@/lib/research/run-client";
 import { buildTraceModel } from "@/lib/research/trace-model";
+import { QUESTION_MAX_LENGTH } from "@/lib/schemas/interpretation";
 import type { ResearchInterpretSuccess } from "@/lib/schemas/interpretation";
+
+type FocusIntent =
+  | "clarify-heading"
+  | "define-heading"
+  | "ask-heading"
+  | "ask-question"
+  | "group"
+  | null;
 
 export function ResearchSession() {
   const [state, setState] = useState<ResearchSessionState>(() =>
@@ -53,20 +62,38 @@ export function ResearchSession() {
   const [interpretationRequestId, setInterpretationRequestId] = useState(0);
   const runAbortRef = useRef<AbortController | null>(null);
   const interpretAbortRef = useRef<AbortController | null>(null);
+  const focusIntentRef = useRef<FocusIntent>(null);
 
   const traceSections = useMemo(() => buildTraceModel(state), [state]);
   const canConfirm = canConfirmAssumptions(state);
   const runDisabled = !canRunExperiment(state) || isResearchRunning(state);
 
   useEffect(() => {
-    if (!state.focusGroupId) {
+    const intent = focusIntentRef.current;
+    focusIntentRef.current = null;
+
+    if (state.focusGroupId) {
+      document.getElementById(`group-${state.focusGroupId}`)?.focus();
       return;
     }
-    const node = document.getElementById(`group-${state.focusGroupId}`);
-    node?.focus();
-  }, [state.focusGroupId, state.stage]);
 
-  useEffect(() => {
+    if (intent === "clarify-heading") {
+      document.getElementById("clarify-heading")?.focus();
+      return;
+    }
+    if (intent === "define-heading") {
+      document.getElementById("define-heading")?.focus();
+      return;
+    }
+    if (intent === "ask-heading") {
+      document.getElementById("ask-heading")?.focus();
+      return;
+    }
+    if (intent === "ask-question") {
+      document.getElementById("research-question")?.focus();
+      return;
+    }
+
     if (state.stage === "TEST" && state.testError) {
       document.getElementById("test-error-heading")?.focus();
       return;
@@ -78,7 +105,13 @@ export function ResearchSession() {
     if (state.stage === "LEARN") {
       document.getElementById("learn-heading")?.focus();
     }
-  }, [state.stage, state.testError, state.activeRequestId]);
+  }, [
+    state.stage,
+    state.focusGroupId,
+    state.testError,
+    state.activeRequestId,
+    state.result,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -144,9 +177,14 @@ export function ResearchSession() {
       setAskError("A research question is required before clarification.");
       return;
     }
+    if (state.question.trim().length > QUESTION_MAX_LENGTH) {
+      setAskError(`Keep the question within ${QUESTION_MAX_LENGTH} characters.`);
+      return;
+    }
     setAskError(null);
     const next = advanceFromAsk(state);
     setCostInput(String(next.roundTripBps));
+    focusIntentRef.current = "clarify-heading";
     setState(next);
 
     const requestId = interpretationRequestId + 1;
@@ -159,6 +197,11 @@ export function ResearchSession() {
     setState((current) => setRoundTripBpsInput(current, value));
   }
 
+  function handleConfirmAssumptions() {
+    focusIntentRef.current = "define-heading";
+    setState((current) => confirmSelectedAssumptions(current));
+  }
+
   function handleReset() {
     runAbortRef.current?.abort();
     runAbortRef.current = null;
@@ -166,6 +209,7 @@ export function ResearchSession() {
     const next = resetSession();
     setAskError(null);
     setCostInput(String(next.roundTripBps));
+    focusIntentRef.current = "ask-heading";
     setState(next);
   }
 
@@ -181,6 +225,7 @@ export function ResearchSession() {
     runAbortRef.current?.abort();
     runAbortRef.current = null;
     clearInterpretationState();
+    focusIntentRef.current = "ask-question";
     setState((current) => editQuestion(current));
   }
 
@@ -303,9 +348,7 @@ export function ResearchSession() {
             setState((current) => restoreRecommended(current, id))
           }
           onCostInputChange={handleCostInputChange}
-          onConfirmAssumptions={() =>
-            setState((current) => confirmSelectedAssumptions(current))
-          }
+          onConfirmAssumptions={handleConfirmAssumptions}
           onEditQuestion={handleEditQuestion}
           onResetSession={handleReset}
         />

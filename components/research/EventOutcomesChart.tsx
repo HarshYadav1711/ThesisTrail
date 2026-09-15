@@ -54,11 +54,15 @@ export function EventOutcomesChart({
     <figure
       className="mt-4 min-w-0"
       aria-label="Event outcomes over time scatter chart"
+      aria-describedby="event-outcomes-chart-desc"
     >
       <figcaption className="text-xs font-medium text-tt-text">
         Event outcomes over time
       </figcaption>
-      <p className="mt-1 text-xs text-tt-text-secondary">
+      <p
+        id="event-outcomes-chart-desc"
+        className="mt-1 text-xs text-tt-text-secondary"
+      >
         Chronological event sequence (not proportionally spaced calendar time).
         Each point is one executed event’s net return. Horizontal lines mark
         zero and the baseline median net return.

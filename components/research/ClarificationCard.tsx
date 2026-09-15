@@ -41,7 +41,7 @@ export function ClarificationCard({
       <p className="mt-2 text-xs text-tt-text-secondary">{definition.prompt}</p>
       <p className="mt-2 text-xs text-tt-text-secondary">{definition.rationale}</p>
 
-      <div className="mt-3 space-y-2" role="radiogroup" aria-label={definition.prompt}>
+      <div className="mt-3 space-y-2">
         {definition.options.map((option) => {
           const inputId = `${definition.id}-${option.id}`;
           const checked = option.id === selectedOptionId;

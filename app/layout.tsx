@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ThesisTrail",
+  title: "ThesisTrail — auditable NIFTY research workflow",
   description:
-    "Turn a vague market question into a testable, auditable research thesis.",
+    "Turn a vague market question into a testable, auditable NIFTY research experiment. Deterministic historical evidence with explicit assumptions; optional AI only for question clarification phrasing.",
 };
 
 export default function RootLayout({
