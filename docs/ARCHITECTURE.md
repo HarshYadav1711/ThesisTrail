@@ -224,13 +224,17 @@ Invalid data never proceeds as if valid.
 
 ### `POST /api/research/run`
 
-**Request (conceptual)**
+**Request**
 
 ```ts
 {
   experiment: ExperimentSpec; // see EXPERIMENT_CONTRACT.md
 }
 ```
+
+Strict Zod validation. Client-supplied bars, dataset paths/URLs, or unknown
+keys are rejected. Material locked fields (instrument, threshold −0.02,
+holdingSessions = 5, etc.) cannot be altered silently.
 
 **Response 200**
 
@@ -240,11 +244,32 @@ Invalid data never proceeds as if valid.
 }
 ```
 
-**Error responses**
+Headers: `Content-Type: application/json`, `Cache-Control: no-store`.
+Identical valid inputs produce deeply equal bodies. Full floating-point
+precision is preserved. AI does not participate in numerical execution.
 
-- `400` validation / contract violation  
-- `422` executable but empty or non-runnable under incomplete data rules (if distinguished)  
-- `500` unexpected server failure  
+**Error responses (machine-readable)**
+
+```ts
+{
+  error: {
+    code: string;
+    message: string;
+    issues?: Array<{ path: Array<string | number>; code: string; message: string }>;
+  }
+}
+```
+
+| HTTP | `error.code` | When |
+|---:|---|---|
+| 415 | `unsupported_media_type` | Missing or non-JSON Content-Type |
+| 400 | `invalid_json` | Malformed JSON body |
+| 422 | `invalid_experiment` | Schema-invalid or unsupported ExperimentSpec |
+| 500 | `dataset_integrity_failure` | Bundled dataset load/checksum failure |
+| 500 | `research_execution_failure` | Unexpected engine/result validation failure |
+
+Error bodies contain no stack traces, absolute paths, source rows, credentials,
+or wall-clock timestamps.
 
 ### `POST /api/research/interpret` (optional, Phase 5)
 
@@ -278,15 +303,15 @@ Must not include fabricated performance metrics. On absent key, provider failure
 
 ## 12. Error taxonomy
 
-| Code / class | Meaning | User-facing behaviour |
+| Code | Meaning | User-facing behaviour |
 |---|---|---|
-| `VALIDATION_ERROR` | Zod/schema failure | Show field errors; do not run |
-| `CONTRACT_VIOLATION` | Spec breaks locked invariants | Block run; explain which invariant |
-| `DATASET_ERROR` | Bundle missing/corrupt | Hard fail with recovery message |
-| `EMPTY_SAMPLE` | Zero qualifying events | Empty LEARN state; no fake averages |
-| `INCOMPLETE_WINDOW` | Event cannot complete holding period | Skip/exclude per contract; report count if useful |
-| `INTERPRET_UNAVAILABLE` | Model/provider failure, timeout, or absent key | Rule-based fallback; never labeled as AI |
-| `INTERNAL_ERROR` | Unexpected | Generic error; log server-side |
+| `unsupported_media_type` | Wrong/missing Content-Type | 415; do not run |
+| `invalid_json` | Malformed JSON | 400; do not run |
+| `invalid_experiment` | Zod/schema or locked-invariant failure | 422 field issues; do not run |
+| `dataset_integrity_failure` | Bundle missing/corrupt/checksum mismatch | 500 hard fail with safe message |
+| `research_execution_failure` | Unexpected engine/result failure | 500 generic safe message |
+| `EMPTY_SAMPLE` | Zero qualifying events (valid run) | Empty LEARN state; null aggregates |
+| `INTERPRET_UNAVAILABLE` | Model/provider failure, timeout, or absent key (Phase 5) | Rule-based fallback; never labeled as AI |
 
 ## 13. Security and privacy considerations
 

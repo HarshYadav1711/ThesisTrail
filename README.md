@@ -34,6 +34,10 @@ See `data/nifty50/PROVENANCE.md` for license verification, checksums, intended v
 
 ## Phase status
 
-Phase 2 ASK→CLARIFY workflow is in place. Phase 3A adds Zod contracts (`MarketBar`, locked `ExperimentSpec`) and the verified bundled dataset adapter. Phase 3B adds the pure deterministic event-study engine and `ExperimentResult` contract (no `/api/research/run` and no UI execution yet).
+Phase 3 complete: Zod contracts, verified bundled NIFTY dataset, deterministic
+event-study engine, and `POST /api/research/run` (strict request/result
+validation; checksum-verified server-side dataset only; no AI in numerical
+execution). The UI is not wired to the endpoint until Phase 4 — Run remains
+disabled.
 
 See `phases.md` for subsequent gates.

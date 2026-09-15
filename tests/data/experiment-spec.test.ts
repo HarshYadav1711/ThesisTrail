@@ -39,6 +39,13 @@ describe("ExperimentSpec schema", () => {
     expect(threshold).not.toBe(-2);
   });
 
+  it("rejects an altered signal threshold", () => {
+    const bad = structuredClone(LOCKED_EXPERIMENT_SPEC_FIXTURE);
+    // @ts-expect-error intentional invalid threshold for boundary test
+    bad.signal.thresholdReturn.value = -0.03;
+    expect(safeParseExperimentSpec(bad).success).toBe(false);
+  });
+
   it("stores 10 bps as 10, not 0.001", () => {
     expect(LOCKED_EXPERIMENT_SPEC_FIXTURE.costs.roundTripBps.value).toBe(10);
     expect(LOCKED_EXPERIMENT_SPEC_FIXTURE.costs.roundTripBps.value).not.toBe(

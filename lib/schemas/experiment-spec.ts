@@ -48,8 +48,8 @@ export const ExperimentSpecSchema = z.strictObject({
   series: provenanced(z.literal("NIFTY50")),
   signal: z.strictObject({
     type: z.literal("close_to_close_return"),
-    /** Decimal ratio, e.g. -0.02 for −2%. */
-    thresholdReturn: provenanced(z.number().finite()),
+    /** Locked decimal ratio −0.02 (−2% close-to-close). */
+    thresholdReturn: provenanced(z.literal(-0.02)),
     observation: provenanced(z.literal("after_close")),
   }),
   entry: provenanced(z.literal("next_session_open")),
