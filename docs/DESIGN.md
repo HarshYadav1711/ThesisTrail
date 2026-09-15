@@ -101,6 +101,8 @@ Each card includes:
 
 Cost (round-trip bps) is editable and labeled as illustrative; locked structural rules (next-session open entry; exit at the close of the fifth trading session counting entry as session 1; overlap ignore) are presented as confirmed defaults with rationale and are not silently changed. If the product later allows changing a locked default, the docs must be updated first and the Trace must record the change reason.
 
+Optional question-interpretation panel (Phase 5) may sit above the cards to restate the question and explain the four ambiguity categories. It must remain compact, disclose AI-assisted vs rules-based source accurately, and must not select options, invent numeric defaults, or become the visual focus.
+
 ## 7. Experiment-review interface (DEFINE)
 
 DEFINE is a read-mostly confirmation surface:

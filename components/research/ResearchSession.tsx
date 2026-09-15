@@ -7,6 +7,10 @@ import { DefinePreview } from "@/components/research/DefinePreview";
 import { LearnStage } from "@/components/research/LearnStage";
 import { TestStage } from "@/components/research/TestStage";
 import { WorkspaceShell } from "@/components/shell/WorkspaceShell";
+import {
+  localInterpretFallback,
+  parseInterpretResponse,
+} from "@/lib/interpret/interpret-client";
 import { buildExperimentSpec, canRunExperiment } from "@/lib/research/build-experiment-spec";
 import type { ClarificationId } from "@/lib/research/clarification-options";
 import {
@@ -35,6 +39,7 @@ import {
   parseResearchRunResponse,
 } from "@/lib/research/run-client";
 import { buildTraceModel } from "@/lib/research/trace-model";
+import type { ResearchInterpretSuccess } from "@/lib/schemas/interpretation";
 
 export function ResearchSession() {
   const [state, setState] = useState<ResearchSessionState>(() =>
@@ -42,7 +47,12 @@ export function ResearchSession() {
   );
   const [askError, setAskError] = useState<string | null>(null);
   const [costInput, setCostInput] = useState(String(state.roundTripBps));
-  const abortRef = useRef<AbortController | null>(null);
+  const [interpretation, setInterpretation] =
+    useState<ResearchInterpretSuccess | null>(null);
+  const [interpretationLoading, setInterpretationLoading] = useState(false);
+  const [interpretationRequestId, setInterpretationRequestId] = useState(0);
+  const runAbortRef = useRef<AbortController | null>(null);
+  const interpretAbortRef = useRef<AbortController | null>(null);
 
   const traceSections = useMemo(() => buildTraceModel(state), [state]);
   const canConfirm = canConfirmAssumptions(state);
@@ -72,9 +82,62 @@ export function ResearchSession() {
 
   useEffect(() => {
     return () => {
-      abortRef.current?.abort();
+      runAbortRef.current?.abort();
+      interpretAbortRef.current?.abort();
     };
   }, []);
+
+  function clearInterpretationState() {
+    interpretAbortRef.current?.abort();
+    interpretAbortRef.current = null;
+    setInterpretation(null);
+    setInterpretationLoading(false);
+    setInterpretationRequestId((current) => current + 1);
+  }
+
+  async function requestInterpretation(question: string, requestId: number) {
+    setInterpretation(null);
+    setInterpretationLoading(true);
+
+    interpretAbortRef.current?.abort();
+    const controller = new AbortController();
+    interpretAbortRef.current = controller;
+
+    try {
+      const response = await fetch("/api/research/interpret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+        signal: controller.signal,
+      });
+      const rawText = await response.text();
+      const parsed = parseInterpretResponse(response.status, rawText);
+      const payload = parsed.ok
+        ? parsed.data
+        : localInterpretFallback(question);
+
+      setInterpretationRequestId((current) => {
+        if (current !== requestId) {
+          return current;
+        }
+        setInterpretation(payload);
+        setInterpretationLoading(false);
+        return current;
+      });
+    } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
+      setInterpretationRequestId((current) => {
+        if (current !== requestId) {
+          return current;
+        }
+        setInterpretation(localInterpretFallback(question));
+        setInterpretationLoading(false);
+        return current;
+      });
+    }
+  }
 
   function handleContinueFromAsk() {
     if (!canAdvanceFromAsk(state)) {
@@ -82,11 +145,13 @@ export function ResearchSession() {
       return;
     }
     setAskError(null);
-    setState((current) => {
-      const next = advanceFromAsk(current);
-      setCostInput(String(next.roundTripBps));
-      return next;
-    });
+    const next = advanceFromAsk(state);
+    setCostInput(String(next.roundTripBps));
+    setState(next);
+
+    const requestId = interpretationRequestId + 1;
+    setInterpretationRequestId(requestId);
+    void requestInterpretation(next.question, requestId);
   }
 
   function handleCostInputChange(value: string) {
@@ -95,8 +160,9 @@ export function ResearchSession() {
   }
 
   function handleReset() {
-    abortRef.current?.abort();
-    abortRef.current = null;
+    runAbortRef.current?.abort();
+    runAbortRef.current = null;
+    clearInterpretationState();
     const next = resetSession();
     setAskError(null);
     setCostInput(String(next.roundTripBps));
@@ -104,16 +170,17 @@ export function ResearchSession() {
   }
 
   function handleReconsider(id?: ClarificationId) {
-    abortRef.current?.abort();
-    abortRef.current = null;
+    runAbortRef.current?.abort();
+    runAbortRef.current = null;
     setState((current) =>
       id ? reconsiderGroup(current, id) : returnToClarify(current),
     );
   }
 
   function handleEditQuestion() {
-    abortRef.current?.abort();
-    abortRef.current = null;
+    runAbortRef.current?.abort();
+    runAbortRef.current = null;
+    clearInterpretationState();
     setState((current) => editQuestion(current));
   }
 
@@ -143,9 +210,9 @@ export function ResearchSession() {
       return;
     }
 
-    abortRef.current?.abort();
+    runAbortRef.current?.abort();
     const controller = new AbortController();
-    abortRef.current = controller;
+    runAbortRef.current = controller;
 
     try {
       const response = await fetch("/api/research/run", {
@@ -227,6 +294,8 @@ export function ResearchSession() {
           state={state}
           costInput={costInput}
           canConfirm={canConfirm}
+          interpretationLoading={interpretationLoading}
+          interpretation={interpretation}
           onSelect={(id, optionId) =>
             setState((current) => selectOption(current, id, optionId))
           }

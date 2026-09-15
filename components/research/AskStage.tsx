@@ -62,7 +62,7 @@ export function AskStage({
           onClick={onContinue}
           className="min-h-11 rounded-sm bg-tt-accent px-3 py-2 text-sm font-medium text-tt-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tt-accent"
         >
-          Continue to CLARIFY
+          Identify ambiguities
         </button>
         <button
           type="button"

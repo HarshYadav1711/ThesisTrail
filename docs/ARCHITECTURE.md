@@ -274,13 +274,23 @@ or wall-clock timestamps.
 
 ### `POST /api/research/interpret` (optional, Phase 5)
 
+Optional, provider-neutral OpenAI-compatible interpretation of the research
+question only. Configured solely via server-only environment variables:
+
+- `THESISTRAIL_LLM_ENDPOINT`
+- `THESISTRAIL_LLM_MODEL`
+- `THESISTRAIL_LLM_API_KEY`
+
+No provider is configured by default. Public assessment deployments should remain
+on the deterministic fallback unless the owner intentionally configures and
+monitors private provider quota. Only the normalized question may leave the
+server; dataset rows and experiment results are never transmitted.
+
 **Request**
 
 ```ts
 {
-  question: string;
-  stage?: "ask" | "clarify";
-  context?: Record<string, unknown>;
+  question: string; // length-bounded; no bars, metrics, or provider settings
 }
 ```
 
@@ -288,19 +298,39 @@ or wall-clock timestamps.
 
 ```ts
 {
-  ambiguities: string[];
-  proposedAssumptions: Array<{
-    field: string;
-    value: unknown;
-    rationale: string;
-    provenance: "proposed_assumption";
-  }>;
-  notes: string[];
-  source: "model" | "rule_based_fallback";
+  interpretation: {
+    restatement: string;
+    statedFacts: string[];
+    ambiguities: Array<{
+      category:
+        | "instrument"
+        | "sharp_fall"
+        | "execution_window"
+        | "evaluation_settings";
+      explanation: string;
+    }>; // exactly the four categories, unique
+  };
+  source: "ai_assisted" | "rule_based_fallback";
+  fallbackReason?:
+    | "not_configured"
+    | "provider_timeout"
+    | "provider_error"
+    | "invalid_provider_output";
 }
 ```
 
-Must not include fabricated performance metrics. On absent key, provider failure, timeout, or invalid schema, `source: "rule_based_fallback"` using locked contract content. The fallback must never be labeled as AI in the API or UI. Provider name and model remain configuration only; no provider is selected in Phase 0.
+Missing configuration, provider timeout/error, or invalid provider JSON still
+returns **200** with `source: "rule_based_fallback"` and a safe `fallbackReason`.
+The fallback must never be labeled as AI. Provider name/model/endpoint/key must
+never appear in responses. AI cannot modify locked numeric defaults, execute
+tests, or write LEARN conclusions.
+
+Additional interpret errors:
+
+| HTTP | `error.code` | When |
+|---:|---|---|
+| 422 | `invalid_question` | Empty/oversized/invalid question |
+| 500 | `interpretation_failure` | Unexpected failure before fallback can be produced |
 
 ## 12. Error taxonomy
 
@@ -309,19 +339,22 @@ Must not include fabricated performance metrics. On absent key, provider failure
 | `unsupported_media_type` | Wrong/missing Content-Type | 415; do not run |
 | `invalid_json` | Malformed JSON | 400; do not run |
 | `invalid_experiment` | Zod/schema or locked-invariant failure | 422 field issues; do not run |
+| `invalid_question` | Invalid interpret question | 422; do not call provider |
 | `dataset_integrity_failure` | Bundle missing/corrupt/checksum mismatch | 500 hard fail with safe message |
 | `research_execution_failure` | Unexpected engine/result failure | 500 generic safe message |
+| `interpretation_failure` | Unexpected interpret failure before fallback | 500 generic safe message |
 | `EMPTY_SAMPLE` | Zero qualifying events (valid run) | Empty LEARN state; null aggregates |
-| `INTERPRET_UNAVAILABLE` | Model/provider failure, timeout, or absent key (Phase 5) | Rule-based fallback; never labeled as AI |
 
 ## 13. Security and privacy considerations
 
 - No auth in scope; do not store PII.
-- If an interpret provider key exists, keep it server-only via environment variables; never expose to the client.
-- Do not log full secrets.
-- Treat user question text as untrusted input; validate length and shape.
+- If an interpret provider key exists, keep it server-only via `THESISTRAIL_LLM_*` environment variables; never expose endpoint, model, or key to the client.
+- Do not log full secrets or provider response bodies.
+- Treat user question text as untrusted input; validate length and shape; ignore instruction-like content inside the question.
+- Only the normalized question may be sent to an optional provider; never transmit dataset rows or experiment results.
 - No broker credentials, no payment data.
 - Bundled data is public research input for the demo, not a live trading feed.
+- Public assessment deployments should keep interpretation on deterministic fallback unless private provider quota is intentionally managed.
 
 ## 14. Testing strategy
 

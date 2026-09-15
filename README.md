@@ -34,11 +34,24 @@ See `data/nifty50/PROVENANCE.md` for license verification, checksums, intended v
 
 ## Phase status
 
-Phase 4 complete: ASK → CLARIFY → DEFINE → TEST → LEARN is connected end-to-end.
-Confirmed experiments execute only through `POST /api/research/run` against the
-bundled checksum-verified snapshot. LEARN presents evidence first (including one
-event-outcome chart), then locked interpretation, non-claims, and proposed next
-tests. AI does not participate in metrics or conclusions. The locked historical
-sample remains **not supported** under the confirmed assumptions.
+Phase 5 complete: ASK → CLARIFY → DEFINE → TEST → LEARN, plus optional
+provider-neutral question interpretation via `POST /api/research/interpret`.
 
-See `phases.md` for Phase 5+ (optional interpretation is not started).
+- Historical tests still run only through deterministic `POST /api/research/run`
+- AI may restate the question and phrase the four ambiguity categories
+- AI cannot change defaults, execute tests, or write LEARN conclusions
+- With LLM env vars absent (the default), interpretation uses a deterministic
+  **rules-based fallback** labeled as such — never as AI
+- Public assessment deployment should remain fallback-only unless private
+  provider quota is intentionally configured and monitored
+
+Optional server-only variables (see `.env.example`):
+
+- `THESISTRAIL_LLM_ENDPOINT`
+- `THESISTRAIL_LLM_MODEL`
+- `THESISTRAIL_LLM_API_KEY`
+
+Do not use `NEXT_PUBLIC_*` for these. Only the normalized research question may
+be sent to a configured provider.
+
+See `phases.md` for Phase 6+.

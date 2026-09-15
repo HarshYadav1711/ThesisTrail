@@ -1,4 +1,5 @@
 import { ClarificationCard } from "@/components/research/ClarificationCard";
+import { InterpretationPanel } from "@/components/research/InterpretationPanel";
 import {
   BASELINE_OVERLAP_POLICY,
   CLARIFICATION_DEFINITIONS,
@@ -9,11 +10,14 @@ import {
   type ClarificationId,
 } from "@/lib/research/clarification-options";
 import type { ResearchSessionState } from "@/lib/research/research-session";
+import type { ResearchInterpretSuccess } from "@/lib/schemas/interpretation";
 
 type ClarifyStageProps = {
   state: ResearchSessionState;
   costInput: string;
   canConfirm: boolean;
+  interpretationLoading: boolean;
+  interpretation: ResearchInterpretSuccess | null;
   onSelect: (id: ClarificationId, optionId: string) => void;
   onRestoreRecommended: (id: ClarificationId) => void;
   onCostInputChange: (value: string) => void;
@@ -26,6 +30,8 @@ export function ClarifyStage({
   state,
   costInput,
   canConfirm,
+  interpretationLoading,
+  interpretation,
   onSelect,
   onRestoreRecommended,
   onCostInputChange,
@@ -46,12 +52,18 @@ export function ClarifyStage({
           Four clarification groups map the question’s ambiguities to explicit
           assumptions. Choose a supported option in each group, then confirm
           once. Unsupported alternatives stay visible when selected but block
-          confirmation.
+          confirmation. Interpretation phrasing is optional and never changes
+          the locked numeric defaults.
         </p>
         <p className="mt-2 font-mono text-xs tabular-nums text-tt-text">
           Question: {state.question}
         </p>
       </div>
+
+      <InterpretationPanel
+        loading={interpretationLoading}
+        payload={interpretation}
+      />
 
       {CLARIFICATION_DEFINITIONS.map((definition) => (
         <ClarificationCard
@@ -132,7 +144,7 @@ export function ClarifyStage({
         {!canConfirm ? (
           <p role="status" className="self-center text-xs text-tt-text-secondary">
             Enabled only when every group has a supported selection and cost is
-            valid.
+            valid. Interpretation loading does not block confirmation.
           </p>
         ) : null}
       </div>

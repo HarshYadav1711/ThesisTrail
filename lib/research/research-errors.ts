@@ -1,7 +1,7 @@
 import type { ZodError, ZodIssue } from "zod";
 
 /**
- * Stable machine-readable API error contract for POST /api/research/run.
+ * Stable machine-readable API error contract for research routes.
  * Messages are safe for clients; never include stack traces, absolute paths,
  * source row contents, credentials, or wall-clock timestamps.
  */
@@ -10,8 +10,10 @@ export type ResearchErrorCode =
   | "unsupported_media_type"
   | "invalid_json"
   | "invalid_experiment"
+  | "invalid_question"
   | "dataset_integrity_failure"
-  | "research_execution_failure";
+  | "research_execution_failure"
+  | "interpretation_failure";
 
 export type ResearchErrorIssue = {
   readonly path: readonly (string | number)[];
@@ -31,8 +33,10 @@ export const RESEARCH_ERROR_STATUS: Record<ResearchErrorCode, number> = {
   unsupported_media_type: 415,
   invalid_json: 400,
   invalid_experiment: 422,
+  invalid_question: 422,
   dataset_integrity_failure: 500,
   research_execution_failure: 500,
+  interpretation_failure: 500,
 };
 
 const SAFE_MESSAGES: Record<ResearchErrorCode, string> = {
@@ -40,10 +44,13 @@ const SAFE_MESSAGES: Record<ResearchErrorCode, string> = {
     "Content-Type must be application/json.",
   invalid_json: "The request body is not valid JSON.",
   invalid_experiment: "The experiment specification is invalid.",
+  invalid_question: "The research question is invalid.",
   dataset_integrity_failure:
     "The bundled research dataset failed integrity verification.",
   research_execution_failure:
     "Deterministic research execution failed unexpectedly.",
+  interpretation_failure:
+    "Question interpretation failed unexpectedly.",
 };
 
 export function zodIssuesForClient(error: ZodError): ResearchErrorIssue[] {
