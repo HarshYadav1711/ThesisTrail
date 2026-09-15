@@ -26,16 +26,16 @@ Mark items only when verified. Do **not** check external items until confirmed.
 - [x] Public HTTPS live application URL in README — https://thesistrail.vercel.app
 - [x] `GET /` returns 200 with correct title
 - [x] `POST /api/research/interpret` works without provider env (fallback)
-- [ ] `POST /api/research/run` returns locked metrics / checksum — re-verify after tracing fix redeploy
-- [ ] Full browser ASK→LEARN on production — re-verify after tracing fix redeploy
+- [x] `POST /api/research/run` returns locked metrics / checksum
+- [x] Full browser ASK→LEARN on production
 - [x] No AI provider env configured on public deploy
 
 ## Local quality gates
 
-- [ ] `npm ci` succeeds
-- [ ] `npm run data:verify` passes
-- [ ] `npm run lint` / `typecheck` / `test:run` / `build` / `validate` pass
-- [ ] `npm audit --omit=dev` clean (or documented)
+- [x] `npm ci` succeeds
+- [x] `npm run data:verify` passes
+- [x] `npm run lint` / `typecheck` / `test:run` / `build` / `validate` pass
+- [x] `npm audit --omit=dev` clean (or documented)
 
 ## Product integrity
 
