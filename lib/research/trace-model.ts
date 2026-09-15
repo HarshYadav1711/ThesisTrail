@@ -8,6 +8,13 @@ import {
   getOption,
 } from "@/lib/research/clarification-options";
 import {
+  formatCount,
+  formatPercent,
+  formatPercentagePoints,
+} from "@/lib/research/format";
+import { learnStatusLabel } from "@/lib/research/learn-copy";
+import {
+  isResearchRunning,
   selectedOptionLabel,
   type ResearchSessionState,
 } from "@/lib/research/research-session";
@@ -17,7 +24,8 @@ export type TraceProvenance =
   | "needs_clarification"
   | "proposed_assumption"
   | "confirmed_assumption"
-  | "derived";
+  | "derived"
+  | "interpretation";
 
 export type TraceItem = {
   id: string;
@@ -56,9 +64,14 @@ const SECTION_META: Record<
     description: "Assumptions accepted via overall confirmation.",
   },
   derived: {
-    label: "DERIVED",
+    label: "DERIVED EVIDENCE",
     description: "Values mechanically computed from data or the spec.",
     emptyMessage: "Nothing derived yet",
+  },
+  interpretation: {
+    label: "INTERPRETATION",
+    description: "Locked classification of the primary comparison.",
+    emptyMessage: "No interpretation yet",
   },
 };
 
@@ -80,6 +93,66 @@ function selectionProvenance(
   return "proposed_assumption";
 }
 
+function pushConfirmedAssumptions(
+  state: ResearchSessionState,
+  items: TraceItem[],
+): void {
+  for (const definition of CLARIFICATION_DEFINITIONS) {
+    const optionId = state.selections[definition.id];
+    const option = getOption(definition.id, optionId);
+    items.push({
+      id: definition.id,
+      label: definition.groupName,
+      value: selectedOptionLabel(definition.id, optionId),
+      provenance: selectionProvenance(state, optionId, definition.id),
+      note: option?.scopeLabel ?? definition.rationale,
+    });
+  }
+
+  const costProvenance: TraceProvenance = state.assumptionsConfirmed
+    ? "confirmed_assumption"
+    : state.costError
+      ? "needs_clarification"
+      : "proposed_assumption";
+
+  items.push({
+    id: "round_trip_bps",
+    label: "Round-trip cost (bps)",
+    value: state.costError
+      ? `Invalid: ${state.costError}`
+      : `${state.roundTripBps} bps (illustrative)`,
+    provenance: costProvenance,
+    note: ROUND_TRIP_COST_RATIONALE,
+  });
+
+  items.push({
+    id: "test_period",
+    label: "Test period",
+    value: `${TEST_PERIOD_LABEL} (${TEST_PERIOD_ISO.start} through ${TEST_PERIOD_ISO.end})`,
+    provenance: state.assumptionsConfirmed
+      ? "confirmed_assumption"
+      : "proposed_assumption",
+  });
+
+  items.push({
+    id: "event_overlap",
+    label: "Event overlap policy",
+    value: EVENT_OVERLAP_POLICY,
+    provenance: state.assumptionsConfirmed
+      ? "confirmed_assumption"
+      : "proposed_assumption",
+  });
+
+  items.push({
+    id: "tradability",
+    label: "Tradability caveat",
+    value: TRADABILITY_NOTE,
+    provenance: state.assumptionsConfirmed
+      ? "confirmed_assumption"
+      : "proposed_assumption",
+  });
+}
+
 export function buildTraceModel(state: ResearchSessionState): TraceSection[] {
   const items: TraceItem[] = [];
 
@@ -93,61 +166,14 @@ export function buildTraceModel(state: ResearchSessionState): TraceSection[] {
     });
   }
 
-  if (state.stage === "CLARIFY" || state.stage === "DEFINE") {
-    for (const definition of CLARIFICATION_DEFINITIONS) {
-      const optionId = state.selections[definition.id];
-      const option = getOption(definition.id, optionId);
-      items.push({
-        id: definition.id,
-        label: definition.groupName,
-        value: selectedOptionLabel(definition.id, optionId),
-        provenance: selectionProvenance(state, optionId, definition.id),
-        note: option?.scopeLabel ?? definition.rationale,
-      });
-    }
+  const showAssumptions =
+    state.stage === "CLARIFY" ||
+    state.stage === "DEFINE" ||
+    state.stage === "TEST" ||
+    state.stage === "LEARN";
 
-    const costProvenance: TraceProvenance = state.assumptionsConfirmed
-      ? "confirmed_assumption"
-      : state.costError
-        ? "needs_clarification"
-        : "proposed_assumption";
-
-    items.push({
-      id: "round_trip_bps",
-      label: "Round-trip cost (bps)",
-      value: state.costError
-        ? `Invalid: ${state.costError}`
-        : `${state.roundTripBps} bps (illustrative)`,
-      provenance: costProvenance,
-      note: ROUND_TRIP_COST_RATIONALE,
-    });
-
-    items.push({
-      id: "test_period",
-      label: "Test period",
-      value: `${TEST_PERIOD_LABEL} (${TEST_PERIOD_ISO.start} through ${TEST_PERIOD_ISO.end})`,
-      provenance: state.assumptionsConfirmed
-        ? "confirmed_assumption"
-        : "proposed_assumption",
-    });
-
-    items.push({
-      id: "event_overlap",
-      label: "Event overlap policy",
-      value: EVENT_OVERLAP_POLICY,
-      provenance: state.assumptionsConfirmed
-        ? "confirmed_assumption"
-        : "proposed_assumption",
-    });
-
-    items.push({
-      id: "tradability",
-      label: "Tradability caveat",
-      value: TRADABILITY_NOTE,
-      provenance: state.assumptionsConfirmed
-        ? "confirmed_assumption"
-        : "proposed_assumption",
-    });
+  if (showAssumptions) {
+    pushConfirmedAssumptions(state, items);
   } else if (trimmedQuestion.length > 0) {
     for (const definition of CLARIFICATION_DEFINITIONS) {
       items.push({
@@ -159,12 +185,68 @@ export function buildTraceModel(state: ResearchSessionState): TraceSection[] {
     }
   }
 
+  if (state.stage === "TEST") {
+    items.push({
+      id: "derived_pending",
+      label: "Execution",
+      value: isResearchRunning(state)
+        ? "Historical test in progress — derived evidence pending"
+        : state.testError
+          ? "Execution did not complete — no derived evidence"
+          : "Derived evidence pending",
+      provenance: "derived",
+    });
+  }
+
+  if (state.stage === "LEARN" && state.result) {
+    const result = state.result;
+    items.push(
+      {
+        id: "qualifying_signals",
+        label: "Qualifying signals",
+        value: formatCount(result.qualifyingSignalCount),
+        provenance: "derived",
+      },
+      {
+        id: "executed_events",
+        label: "Executed events",
+        value: formatCount(result.eventCount),
+        provenance: "derived",
+      },
+      {
+        id: "event_median_net",
+        label: "Event median net return",
+        value: formatPercent(result.primaryOutcome.eventMedianNetReturn),
+        provenance: "derived",
+      },
+      {
+        id: "baseline_median_net",
+        label: "Baseline median net return",
+        value: formatPercent(result.primaryOutcome.baselineMedianNetReturn),
+        provenance: "derived",
+      },
+      {
+        id: "primary_delta",
+        label: "Primary delta",
+        value: formatPercentagePoints(result.primaryOutcome.delta),
+        provenance: "derived",
+      },
+      {
+        id: "interpretation_key",
+        label: "Observed sample",
+        value: learnStatusLabel(result.primaryOutcome.interpretationKey),
+        provenance: "interpretation",
+      },
+    );
+  }
+
   const order: TraceProvenance[] = [
     "user_stated",
     "needs_clarification",
     "proposed_assumption",
     "confirmed_assumption",
     "derived",
+    "interpretation",
   ];
 
   return order.map((id) => {
@@ -176,8 +258,10 @@ export function buildTraceModel(state: ResearchSessionState): TraceSection[] {
       description: meta.description,
       items: sectionItems,
       emptyMessage:
-        id === "derived"
-          ? meta.emptyMessage
+        id === "derived" || id === "interpretation"
+          ? sectionItems.length === 0
+            ? meta.emptyMessage
+            : undefined
           : sectionItems.length === 0
             ? "None yet."
             : undefined,

@@ -34,10 +34,11 @@ See `data/nifty50/PROVENANCE.md` for license verification, checksums, intended v
 
 ## Phase status
 
-Phase 3 complete: Zod contracts, verified bundled NIFTY dataset, deterministic
-event-study engine, and `POST /api/research/run` (strict request/result
-validation; checksum-verified server-side dataset only; no AI in numerical
-execution). The UI is not wired to the endpoint until Phase 4 — Run remains
-disabled.
+Phase 4 complete: ASK → CLARIFY → DEFINE → TEST → LEARN is connected end-to-end.
+Confirmed experiments execute only through `POST /api/research/run` against the
+bundled checksum-verified snapshot. LEARN presents evidence first (including one
+event-outcome chart), then locked interpretation, non-claims, and proposed next
+tests. AI does not participate in metrics or conclusions. The locked historical
+sample remains **not supported** under the confirmed assumptions.
 
-See `phases.md` for subsequent gates.
+See `phases.md` for Phase 5+ (optional interpretation is not started).

@@ -3,12 +3,11 @@ import { AppHeader } from "@/components/shell/AppHeader";
 import { ResearchTrace } from "@/components/shell/ResearchTrace";
 import { WorkflowProgress } from "@/components/shell/WorkflowProgress";
 import type { TraceSection } from "@/lib/research/trace-model";
-
-type Phase2Stage = "ASK" | "CLARIFY" | "DEFINE";
+import type { WorkflowStage } from "@/lib/workflow/stages";
 
 type WorkspaceShellProps = {
   children: ReactNode;
-  activeStage?: Phase2Stage;
+  activeStage?: WorkflowStage;
   traceSections: TraceSection[];
 };
 

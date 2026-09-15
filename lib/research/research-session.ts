@@ -8,22 +8,48 @@ import {
   isSupportedSelection,
   type ClarificationId,
 } from "@/lib/research/clarification-options";
+import type { ClientError } from "@/lib/research/run-client";
+import type { ExperimentResult } from "@/lib/schemas/experiment-result";
 import type { WorkflowStage } from "@/lib/workflow/stages";
 
+export type ResearchUiStage = WorkflowStage;
+
 export type ResearchSessionState = {
-  /** Interactive stages only in Phase 2. TEST/LEARN remain unreachable. */
-  stage: Extract<WorkflowStage, "ASK" | "CLARIFY" | "DEFINE">;
+  stage: ResearchUiStage;
   question: string;
   /** True after overall “Confirm selected assumptions”. */
   assumptionsConfirmed: boolean;
   selections: Record<ClarificationId, string>;
   roundTripBps: number;
   costError: string | null;
-  /** Group to focus when returning from DEFINE reconsider. */
+  /** Group to focus when returning from DEFINE/LEARN reconsider. */
   focusGroupId: ClarificationId | null;
+  /**
+   * Local-only monotonic generation for request lifecycle.
+   * Never sent to the API or stored in ExperimentResult.
+   */
+  requestGeneration: number;
+  /** Active in-flight request id, or null when idle. */
+  activeRequestId: number | null;
+  result: ExperimentResult | null;
+  testError: ClientError | null;
 };
 
 export type StageProgressStatus = "current" | "completed" | "pending";
+
+function clearExecutionFields(
+  state: ResearchSessionState,
+): Pick<
+  ResearchSessionState,
+  "result" | "testError" | "activeRequestId" | "requestGeneration"
+> {
+  return {
+    result: null,
+    testError: null,
+    activeRequestId: null,
+    requestGeneration: state.requestGeneration + 1,
+  };
+}
 
 export function createInitialSession(
   question = DEFAULT_EXAMPLE_QUESTION,
@@ -40,6 +66,10 @@ export function createInitialSession(
     roundTripBps: DEFAULT_ROUND_TRIP_BPS,
     costError: null,
     focusGroupId: null,
+    requestGeneration: 0,
+    activeRequestId: null,
+    result: null,
+    testError: null,
   };
 }
 
@@ -93,6 +123,7 @@ export function advanceFromAsk(
   }
   return {
     ...state,
+    ...clearExecutionFields(state),
     stage: "CLARIFY",
     question: state.question.trim(),
     assumptionsConfirmed: false,
@@ -114,8 +145,14 @@ export function selectOption(
   }
   return {
     ...state,
+    ...clearExecutionFields(state),
     assumptionsConfirmed: false,
-    stage: state.stage === "DEFINE" ? "CLARIFY" : state.stage,
+    stage:
+      state.stage === "DEFINE" ||
+      state.stage === "TEST" ||
+      state.stage === "LEARN"
+        ? "CLARIFY"
+        : state.stage,
     selections: {
       ...state.selections,
       [groupId]: optionId,
@@ -139,15 +176,27 @@ export function setRoundTripBpsInput(
   if (!result.ok) {
     return {
       ...state,
+      ...clearExecutionFields(state),
       assumptionsConfirmed: false,
-      stage: state.stage === "DEFINE" ? "CLARIFY" : state.stage,
+      stage:
+        state.stage === "DEFINE" ||
+        state.stage === "TEST" ||
+        state.stage === "LEARN"
+          ? "CLARIFY"
+          : state.stage,
       costError: result.error,
     };
   }
   return {
     ...state,
+    ...clearExecutionFields(state),
     assumptionsConfirmed: false,
-    stage: state.stage === "DEFINE" ? "CLARIFY" : state.stage,
+    stage:
+      state.stage === "DEFINE" ||
+      state.stage === "TEST" ||
+      state.stage === "LEARN"
+        ? "CLARIFY"
+        : state.stage,
     roundTripBps: result.value,
     costError: null,
   };
@@ -183,6 +232,7 @@ export function confirmSelectedAssumptions(
   }
   return {
     ...state,
+    ...clearExecutionFields(state),
     stage: "DEFINE",
     assumptionsConfirmed: true,
     focusGroupId: null,
@@ -195,6 +245,7 @@ export function reconsiderGroup(
 ): ResearchSessionState {
   return {
     ...state,
+    ...clearExecutionFields(state),
     stage: "CLARIFY",
     assumptionsConfirmed: false,
     focusGroupId: groupId,
@@ -204,6 +255,7 @@ export function reconsiderGroup(
 export function editQuestion(state: ResearchSessionState): ResearchSessionState {
   return {
     ...state,
+    ...clearExecutionFields(state),
     stage: "ASK",
     assumptionsConfirmed: false,
     focusGroupId: null,
@@ -215,10 +267,96 @@ export function returnToClarify(
 ): ResearchSessionState {
   return {
     ...state,
+    ...clearExecutionFields(state),
     stage: "CLARIFY",
     assumptionsConfirmed: false,
     focusGroupId: null,
   };
+}
+
+/** Explicit Run from DEFINE (or Retry from TEST error). */
+export function beginResearchRun(
+  state: ResearchSessionState,
+): ResearchSessionState | null {
+  if (!state.assumptionsConfirmed) {
+    return null;
+  }
+  if (unsupportedSelections(state).length > 0 || !hasValidCost(state)) {
+    return null;
+  }
+  if (state.activeRequestId !== null) {
+    return null;
+  }
+  if (state.stage !== "DEFINE" && state.stage !== "TEST") {
+    return null;
+  }
+  const requestId = state.requestGeneration + 1;
+  return {
+    ...state,
+    stage: "TEST",
+    requestGeneration: requestId,
+    activeRequestId: requestId,
+    result: null,
+    testError: null,
+    focusGroupId: null,
+  };
+}
+
+export function applyResearchSuccess(
+  state: ResearchSessionState,
+  requestId: number,
+  result: ExperimentResult,
+): ResearchSessionState {
+  if (state.activeRequestId !== requestId) {
+    return state;
+  }
+  return {
+    ...state,
+    stage: "LEARN",
+    activeRequestId: null,
+    result,
+    testError: null,
+  };
+}
+
+export function applyResearchFailure(
+  state: ResearchSessionState,
+  requestId: number,
+  error: ClientError,
+): ResearchSessionState {
+  if (state.activeRequestId !== requestId) {
+    return state;
+  }
+  if (error.category === "aborted") {
+    return {
+      ...state,
+      activeRequestId: null,
+    };
+  }
+  return {
+    ...state,
+    stage: "TEST",
+    activeRequestId: null,
+    result: null,
+    testError: error,
+  };
+}
+
+export function dismissInFlightRequest(
+  state: ResearchSessionState,
+  requestId: number,
+): ResearchSessionState {
+  if (state.activeRequestId !== requestId) {
+    return state;
+  }
+  return {
+    ...state,
+    activeRequestId: null,
+  };
+}
+
+export function isResearchRunning(state: ResearchSessionState): boolean {
+  return state.stage === "TEST" && state.activeRequestId !== null;
 }
 
 export function selectedOptionLabel(
@@ -229,7 +367,7 @@ export function selectedOptionLabel(
 }
 
 export function deriveStageStatuses(
-  currentStage: ResearchSessionState["stage"],
+  currentStage: ResearchUiStage,
 ): Record<WorkflowStage, StageProgressStatus> {
   const order: WorkflowStage[] = [
     "ASK",
@@ -241,7 +379,7 @@ export function deriveStageStatuses(
   const currentIndex = order.indexOf(currentStage);
   const statuses = {} as Record<WorkflowStage, StageProgressStatus>;
   for (let index = 0; index < order.length; index += 1) {
-    const stage = order[index];
+    const stage = order[index]!;
     if (index < currentIndex) {
       statuses[stage] = "completed";
     } else if (index === currentIndex) {

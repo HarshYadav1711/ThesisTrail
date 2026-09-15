@@ -39,12 +39,13 @@ Session state lives in the client for the prototype. The engine and dataset live
 
 | Component | Responsibility |
 |---|---|
-| App shell / workflow UI | Stage navigation, assumption cards, DEFINE review, LEARN layout |
-| Research Trace | Persistent display of material values + provenance |
+| App shell / workflow UI | Stage navigation, assumption cards, DEFINE review, TEST status, LEARN layout |
+| Research Trace | Persistent display of material values + provenance (including derived evidence) |
 | `ExperimentSpec` builder | Maps confirmed clarifications into a validated spec |
 | Dataset adapter | Loads and validates bundled OHLC; exposes read-only bar series |
 | Research engine | Signal detection, event construction, metrics, baseline, costs |
 | `POST /api/research/run` | Validate spec → run engine → return `ExperimentResult` |
+| LEARN presentation | Evidence-first results, one event-outcome chart, locked interpretation copy |
 | `POST /api/research/interpret` (optional) | Suggest clarifications / wording; never compute evidence |
 | Zod schemas | Runtime contracts for API I/O and domain objects |
 | Vitest suite | Engine invariants, edge cases, regression locks |

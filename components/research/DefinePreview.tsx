@@ -8,6 +8,7 @@ import {
   TRADABILITY_NOTE,
   type ClarificationId,
 } from "@/lib/research/clarification-options";
+import { formatBasisPoints } from "@/lib/research/format";
 import {
   selectedOptionLabel,
   type ResearchSessionState,
@@ -15,6 +16,8 @@ import {
 
 type DefinePreviewProps = {
   state: ResearchSessionState;
+  runDisabled: boolean;
+  onRun: () => void;
   onReconsider: (id: ClarificationId) => void;
   onEditQuestion: () => void;
   onResetSession: () => void;
@@ -22,6 +25,8 @@ type DefinePreviewProps = {
 
 export function DefinePreview({
   state,
+  runDisabled,
+  onRun,
   onReconsider,
   onEditQuestion,
   onResetSession,
@@ -31,14 +36,20 @@ export function DefinePreview({
       aria-labelledby="define-heading"
       className="rounded-sm border border-tt-border bg-tt-surface p-4"
     >
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-tt-accent">
+        DEFINE
+      </p>
       <h2
         id="define-heading"
-        className="text-sm font-semibold text-tt-text sm:text-base"
+        className="mt-1 text-sm font-semibold text-tt-text sm:text-base"
       >
-        DEFINE preview
+        Confirmed experiment ready to test
       </h2>
       <p className="mt-2 max-w-prose text-sm text-tt-text-secondary">
-        Non-executing review of confirmed assumptions. Experiment not built yet.
+        Review the locked assumptions below. The test uses a bundled fixed
+        snapshot of 4,487 sessions — no live data is fetched. Results are
+        descriptive historical evidence. The index itself is not directly
+        tradable.
       </p>
 
       <dl className="mt-4 space-y-3 text-sm">
@@ -50,8 +61,72 @@ export function DefinePreview({
           <dt className="text-xs text-tt-text-secondary">Locked hypothesis</dt>
           <dd className="mt-1 text-tt-text">{LOCKED_HYPOTHESIS}</dd>
         </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Research series</dt>
+          <dd className="mt-1 text-tt-text">NIFTY 50 index (research series)</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Sharp fall</dt>
+          <dd className="mt-1 text-tt-text">
+            ≤ −2.0% close-to-close (signal observed at close)
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Entry</dt>
+          <dd className="mt-1 text-tt-text">Next trading session open</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Exit</dt>
+          <dd className="mt-1 text-tt-text">
+            Close of the fifth trading session, counting the entry session as
+            session 1 (five sessions including entry)
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Direction</dt>
+          <dd className="mt-1 text-tt-text">Long</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Event overlap</dt>
+          <dd className="mt-1 text-xs text-tt-text">{EVENT_OVERLAP_POLICY}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Baseline windows</dt>
+          <dd className="mt-1 text-xs text-tt-text">{BASELINE_OVERLAP_POLICY}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Effective period</dt>
+          <dd className="mt-1 font-mono text-xs tabular-nums text-tt-text">
+            {TEST_PERIOD_LABEL}
+          </dd>
+          <dd className="mt-1 font-mono text-[11px] tabular-nums text-tt-text-secondary">
+            {TEST_PERIOD_ISO.start} through {TEST_PERIOD_ISO.end}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">
+            Confirmed round-trip cost
+          </dt>
+          <dd className="mt-1 font-mono text-xs tabular-nums text-tt-text">
+            {formatBasisPoints(state.roundTripBps)} (illustrative)
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Primary outcome</dt>
+          <dd className="mt-1 text-xs text-tt-text">
+            Median event net return − median baseline net return
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-tt-text-secondary">Tradability caveat</dt>
+          <dd className="mt-1 text-xs text-tt-warning">{TRADABILITY_NOTE}</dd>
+        </div>
+
         {CLARIFICATION_DEFINITIONS.map((definition) => (
-          <div key={definition.id} className="rounded-sm border border-tt-border bg-tt-surface-raised p-2">
+          <div
+            key={definition.id}
+            className="rounded-sm border border-tt-border bg-tt-surface-raised p-2"
+          >
             <dt className="text-xs text-tt-text-secondary">
               {definition.groupName}
             </dt>
@@ -70,48 +145,18 @@ export function DefinePreview({
             </button>
           </div>
         ))}
-        <div>
-          <dt className="text-xs text-tt-text-secondary">
-            Confirmed illustrative cost
-          </dt>
-          <dd className="mt-1 font-mono text-xs tabular-nums text-tt-text">
-            {state.roundTripBps} bps round-trip
-          </dd>
-        </div>
-        <div>
-          <dt className="text-xs text-tt-text-secondary">Fixed test period</dt>
-          <dd className="mt-1 font-mono text-xs tabular-nums text-tt-text">
-            {TEST_PERIOD_LABEL}
-          </dd>
-          <dd className="mt-1 font-mono text-[11px] tabular-nums text-tt-text-secondary">
-            {TEST_PERIOD_ISO.start} through {TEST_PERIOD_ISO.end}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-xs text-tt-text-secondary">Event overlap policy</dt>
-          <dd className="mt-1 text-xs text-tt-text">{EVENT_OVERLAP_POLICY}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-tt-text-secondary">
-            Baseline overlap policy
-          </dt>
-          <dd className="mt-1 text-xs text-tt-text">{BASELINE_OVERLAP_POLICY}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-tt-text-secondary">Tradability caveat</dt>
-          <dd className="mt-1 text-xs text-tt-warning">{TRADABILITY_NOTE}</dd>
-        </div>
       </dl>
 
-      <p
-        role="status"
-        className="mt-4 rounded-sm border border-tt-border bg-tt-surface-raised px-3 py-2 text-xs text-tt-text-secondary"
-      >
-        Experiment not built yet. Execution arrives in Phase 3/4. No numerical
-        evidence is shown here.
-      </p>
-
       <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={onRun}
+          disabled={runDisabled}
+          aria-disabled={runDisabled}
+          className="min-h-11 rounded-sm bg-tt-accent px-3 py-2 text-sm font-medium text-tt-bg disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tt-accent"
+        >
+          Run historical test
+        </button>
         <button
           type="button"
           onClick={onEditQuestion}
@@ -125,15 +170,6 @@ export function DefinePreview({
           className="min-h-11 rounded-sm border border-tt-border bg-tt-bg px-3 py-2 text-sm text-tt-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tt-accent"
         >
           Reset session
-        </button>
-        <button
-          type="button"
-          disabled
-          aria-disabled="true"
-          className="min-h-11 cursor-not-allowed rounded-sm bg-tt-accent/40 px-3 py-2 text-sm font-medium text-tt-bg opacity-60"
-          title="Available after Phase 3/4 engine work"
-        >
-          Run experiment (Phase 3/4)
         </button>
       </div>
     </section>

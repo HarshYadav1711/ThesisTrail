@@ -231,7 +231,7 @@ describe("reconsider, edit question, and reset", () => {
 });
 
 describe("stage-status derivation", () => {
-  it("is correct for all Phase 2 states", () => {
+  it("is correct for all workflow states", () => {
     expect(deriveStageStatuses("ASK")).toEqual({
       ASK: "current",
       CLARIFY: "pending",
@@ -252,6 +252,20 @@ describe("stage-status derivation", () => {
       DEFINE: "current",
       TEST: "pending",
       LEARN: "pending",
+    });
+    expect(deriveStageStatuses("TEST")).toEqual({
+      ASK: "completed",
+      CLARIFY: "completed",
+      DEFINE: "completed",
+      TEST: "current",
+      LEARN: "pending",
+    });
+    expect(deriveStageStatuses("LEARN")).toEqual({
+      ASK: "completed",
+      CLARIFY: "completed",
+      DEFINE: "completed",
+      TEST: "completed",
+      LEARN: "current",
     });
   });
 });

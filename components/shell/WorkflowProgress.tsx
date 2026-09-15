@@ -5,7 +5,7 @@ import {
 import { WORKFLOW_STAGES, type WorkflowStage } from "@/lib/workflow/stages";
 
 type WorkflowProgressProps = {
-  activeStage?: Extract<WorkflowStage, "ASK" | "CLARIFY" | "DEFINE">;
+  activeStage?: WorkflowStage;
 };
 
 function statusLabel(status: StageProgressStatus): string {

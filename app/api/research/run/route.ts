@@ -1,9 +1,10 @@
-import { z } from "zod";
 import { DatasetValidationError } from "@/lib/data/parse-nifty50-csv";
 import { executeLockedResearch } from "@/lib/research/execute-locked-research";
 import { jsonErrorResponse, zodIssuesForClient } from "@/lib/research/research-errors";
-import { ExperimentSpecSchema } from "@/lib/schemas/experiment-spec";
-import { ExperimentResultSchema } from "@/lib/schemas/experiment-result";
+import {
+  ResearchRunRequestSchema,
+  ResearchRunSuccessSchema,
+} from "@/lib/schemas/research-run-api";
 
 export const runtime = "nodejs";
 
@@ -12,14 +13,6 @@ export const runtime = "nodejs";
  * Request JSON → ExperimentSpec validation → bundled dataset → pure engine →
  * ExperimentResult. No client bars, no alternate datasets, no AI, no persistence.
  */
-const ResearchRunRequestSchema = z.strictObject({
-  experiment: ExperimentSpecSchema,
-});
-
-const ResearchRunSuccessSchema = z.strictObject({
-  result: ExperimentResultSchema,
-});
-
 function isApplicationJson(contentType: string | null): boolean {
   if (contentType === null || contentType.trim() === "") {
     return false;

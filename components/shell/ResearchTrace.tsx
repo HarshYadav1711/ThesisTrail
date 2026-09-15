@@ -14,6 +14,9 @@ function provenanceClass(provenance: string): string {
   if (provenance === "user_stated") {
     return "text-tt-accent";
   }
+  if (provenance === "interpretation") {
+    return "text-tt-text";
+  }
   return "text-tt-text-secondary";
 }
 
